@@ -49,24 +49,25 @@ namespace Amazon.Ion.ObjectMapper.Test
         }
 
         [TestMethod]
-        public void AnnotatedIonSerializer()
+        public void AnnotatedIonSerializerSerialization()
         {
             var annotatedIonSerializer = new Dictionary<string, IIonSerializer>();
-            var annotatedIonDeserializer = new Dictionary<string, IIonSerializer>();
             annotatedIonSerializer.Add("OEM.Manufacturer", new SupraManufacturerSerializer());
-            annotatedIonDeserializer.Add("OEM.Manufacturer", new SupraManufacturerDeserializer());
 
             var customizedSerializer = new IonSerializer(new IonSerializationOptions { AnnotatedIonSerializers = annotatedIonSerializer });
+
+            Assert.AreEqual("BMW", Serde(customizedSerializer, TestObjects.a90).Brand);
+        }
+
+        [TestMethod]
+        public void AnnotatedIonSerializerDeserialization()
+        {
+            var annotatedIonDeserializer = new Dictionary<string, IIonSerializer>();
+            annotatedIonDeserializer.Add("OEM.Manufacturer", new SupraManufacturerDeserializer());
+
             var customizedDeserializer = new IonSerializer(new IonSerializationOptions { AnnotatedIonSerializers = annotatedIonDeserializer });
 
-            var stream = customizedSerializer.Serialize(TestObjects.a90);
-            var defaultStream = customizedDeserializer.Serialize(TestObjects.a90);
-
-            var outputCustomSerialize = customizedSerializer.Deserialize<Supra>(stream);
-            var outputCustomDeserialize = customizedDeserializer.Deserialize<Supra>(defaultStream);
-
-            Assert.AreEqual("BMW", outputCustomSerialize.Brand);
-            Assert.AreEqual("BMW", outputCustomDeserialize.Brand);
+            Assert.AreEqual("BMW", Serde(customizedDeserializer, TestObjects.a90).Brand);
         }
     }
 }
