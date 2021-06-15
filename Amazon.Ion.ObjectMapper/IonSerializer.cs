@@ -174,6 +174,8 @@ namespace Amazon.Ion.ObjectMapper
         public readonly bool PermissiveMode;
         
         public Dictionary<Type, IIonSerializer> IonSerializers { get; init; }
+
+        public Dictionary<string, IIonSerializer> AnnotatedIonSerializers { get; init; }
     }
 
     public interface IonSerializerFactory<T, TContext> where TContext : IonSerializationContext
@@ -216,6 +218,13 @@ namespace Amazon.Ion.ObjectMapper
             if (item == null)
             {
                 new IonNullSerializer().Serialize(writer, null);
+                return;
+            }
+
+            Type type = item.GetType();
+            var ionAnnotateTypes = (IEnumerable<IonAnnotateType>)type.GetCustomAttributes(typeof(IonAnnotateType), false);
+            if (TryAnnotatedIonSerializer(writer, item, ionAnnotateTypes))
+            {
                 return;
             }
 
@@ -331,7 +340,33 @@ namespace Amazon.Ion.ObjectMapper
                 return;
             }
 
-            throw new NotSupportedException($"Do not know how to serialize type {typeof(T)}");
+            throw new NotSupportedException($"Do not know how to serialize type {type}");
+        }
+
+        internal bool TryAnnotatedIonSerializer<T>(IIonWriter writer, T item, IEnumerable<IonAnnotateType> annotationAttributes)
+        {
+            if (item == null)
+            {
+                return false;
+            }
+
+            Type itemType = item.GetType();
+
+            if (options.AnnotatedIonSerializers != null)
+            {
+                foreach (IonAnnotateType annotationAttribute in annotationAttributes)
+                {
+                    string standardizedAnnotation = options.AnnotationConvention.Apply(annotationAttribute, itemType);
+                    if (options.AnnotatedIonSerializers.ContainsKey(standardizedAnnotation))
+                    {
+                        var serializer = options.AnnotatedIonSerializers[standardizedAnnotation];
+                        writer.AddTypeAnnotation(standardizedAnnotation);
+                        serializer.Serialize(writer, item);
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         private IonListSerializer NewIonListSerializer(Type listType) 
@@ -369,6 +404,17 @@ namespace Amazon.Ion.ObjectMapper
             if (reader.CurrentDepth > this.options.MaxDepth)
             {
                 return null;
+            }
+
+            if (options.AnnotatedIonSerializers != null)
+            {
+                foreach (var valuePair in options.AnnotatedIonSerializers)
+                {
+                    if (reader.HasAnnotation(valuePair.Key))
+                    {
+                        return valuePair.Value.Deserialize(reader);
+                    }
+                }
             }
 
             if (ionType == IonType.None || ionType == IonType.Null)
