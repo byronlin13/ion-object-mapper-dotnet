@@ -310,6 +310,13 @@ namespace Amazon.Ion.ObjectMapper
 
             if (item is object)
             {
+                var customSerializerAttribute = item.GetType().GetCustomAttribute<IonSerializerAttribute>();
+                if (customSerializerAttribute != null) {
+                    var customSerializer = (IIonSerializer)Activator.CreateInstance(customSerializerAttribute.Serializer);
+                    customSerializer.Serialize(writer, item);
+                    return;
+                }
+
                 new IonObjectSerializer(this, options, item.GetType()).Serialize(writer, item);
                 return;
             }
@@ -352,6 +359,15 @@ namespace Amazon.Ion.ObjectMapper
             if (reader.CurrentDepth > this.options.MaxDepth)
             {
                 return null;
+            }
+
+            if (type != null) 
+            {
+                var customSerializerAttribute = type.GetCustomAttribute<IonSerializerAttribute>();
+                if (customSerializerAttribute != null) {
+                    var customSerializer = (IIonSerializer)Activator.CreateInstance(customSerializerAttribute.Serializer);
+                    return customSerializer.Deserialize(reader);
+                }
             }
 
             if (ionType == IonType.None || ionType == IonType.Null)

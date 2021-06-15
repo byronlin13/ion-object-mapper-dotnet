@@ -53,7 +53,7 @@ namespace Amazon.Ion.ObjectMapper.Test
 
             var stream = ionSerializer.Serialize(shuai);
 
-            Assert.AreEqual("{\nname: \"Shuai\", \nhobby: \"Running\"\n}", Utils.PrettyPrint(stream));
+            Assert.AreEqual("\n{\n  name: \"Shuai\",\n  hobby: \"Running\"\n}", Utils.PrettyPrint(stream));
 
             var deserialized = ionSerializer.Deserialize<Person>(stream);
 
