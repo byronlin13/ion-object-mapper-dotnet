@@ -172,10 +172,12 @@ namespace Amazon.Ion.ObjectMapper
         public Dictionary<string, object> Context { get; init; }
     }
 
-    public interface IonSerializerFactory<T>
+    public interface IIonSerializerFactory<T>
     {
         public IonSerializer<T> create(IonSerializationOptions options, Dictionary<string, object> context);
     }
+
+
 
     public class IonSerializer
     {
@@ -309,11 +311,19 @@ namespace Amazon.Ion.ObjectMapper
             {
                 var customSerializerAttribute = item.GetType().GetCustomAttribute<IonSerializerAttribute>();
                 if (customSerializerAttribute != null) {
-                    var customSerializerFactory = (IonSerializerFactory<object>)Activator.CreateInstance(customSerializerAttribute.Factory);
+                    var customSerializerFactory = (IIonSerializerFactory<object>)Activator.CreateInstance(customSerializerAttribute.Factory);
                     var customSerializer = customSerializerFactory.create(options, options.Context);
                     customSerializer.Serialize(writer, item);
                     return;
                 }
+
+                // var customSerializerAttribute = item.GetType().GetCustomAttribute<IonSerializerAttribute>();
+                // if (customSerializerAttribute != null) {
+                //     var customSerializer = (IIonSerializer)Activator.CreateInstance(customSerializerAttribute.Serializer);
+                //     customSerializer.Serialize(writer, item);
+                //     return;
+                // }
+
 
                 new IonObjectSerializer(this, options, item.GetType()).Serialize(writer, item);
                 return;

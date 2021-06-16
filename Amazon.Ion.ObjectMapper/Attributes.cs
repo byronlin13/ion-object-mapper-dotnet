@@ -21,6 +21,8 @@ namespace Amazon.Ion.ObjectMapper
     public class IonSerializerAttribute : Attribute
     {
         public Type Factory {get; set;}
+
+        public Type Serializer {get; set;}
     }
 
     public class IonConstructor : Attribute

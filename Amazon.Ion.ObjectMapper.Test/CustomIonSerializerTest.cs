@@ -7,12 +7,21 @@ using static Amazon.Ion.ObjectMapper.Test.Utils;
 
 namespace Amazon.Ion.ObjectMapper.Test
 {
-
-    class HobbySerializerFactory : IonSerializerFactory<Hobby>
+    class HobbySerializerFactory : IIonSerializerFactory<Hobby>
     {
         public IonSerializer<Hobby> create(IonSerializationOptions options, Dictionary<string, object> context)
         {
             return new HobbySerializer((Translator)context.GetValueOrDefault("translator", null));
+        }
+
+        public Hobby Deserialize(IIonReader reader)
+        {
+            return new Hobby { Name = reader.StringValue() };
+        }
+
+        public void Serialize(IIonWriter writer, Hobby item)
+        {
+            writer.WriteString(item.Name);
         }
     }
 
@@ -29,7 +38,7 @@ namespace Amazon.Ion.ObjectMapper.Test
         public string ToEnglish(string mandarin)
         {
             var d = new Dictionary<string, string>();
-            d.Add("nihao", "hello";
+            d.Add("nihao", "hello");
             d.Add("paobu", "running");
             return d.GetValueOrDefault(mandarin, "unknown");
         }
@@ -46,16 +55,31 @@ namespace Amazon.Ion.ObjectMapper.Test
 
         public override Hobby Deserialize(IIonReader reader)
         {
-            return new Hobby { Name = translator.ToMandarin(reader.StringValue()) };
+            return new Hobby { Name = translator.ToEnglish(reader.StringValue()) };
         }
 
         public override void Serialize(IIonWriter writer, Hobby item)
         {
-            writer.WriteString(translator.ToEnglish(item.Name));
+            writer.WriteString(translator.ToMandarin(item.Name));
         }
     }
 
+    // class HobbySerializer : IonSerializer<Hobby>
+    // {
+
+    //     public override Hobby Deserialize(IIonReader reader)
+    //     {
+    //         return new Hobby { Name = reader.StringValue() };
+    //     }
+
+    //     public override void Serialize(IIonWriter writer, Hobby item)
+    //     {
+    //         writer.WriteString(item.Name);
+    //     }
+    // }
+
     [IonSerializer(Factory = typeof(HobbySerializerFactory))]
+    // [IonSerializer(Serializer = typeof(HobbySerializer))]
     class Hobby
     {
         public string Name {get; set;}
@@ -90,6 +114,8 @@ namespace Amazon.Ion.ObjectMapper.Test
                     { "translator", new Translator()}
                 }
             });
+            
+            // var ionSerializer = new IonSerializer();
 
             var stream = ionSerializer.Serialize(shuai);
 
