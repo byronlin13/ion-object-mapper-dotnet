@@ -57,7 +57,7 @@ namespace Amazon.Ion.ObjectMapper.Test
 
             var deserialized = ionSerializer.Deserialize<Person>(stream);
 
-            Assert.AreEqual(shuai, deserialized);
+            Assert.AreEqual(shuai.ToString(), deserialized.ToString());
         }
     }
 }
