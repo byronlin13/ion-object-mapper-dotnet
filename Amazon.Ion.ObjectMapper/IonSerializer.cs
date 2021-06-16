@@ -31,11 +31,6 @@ namespace Amazon.Ion.ObjectMapper
         }
     }
 
-    public interface IonSerializationContext
-    {
-
-    }
-
     public enum IonSerializationFormat 
     {
         BINARY,
@@ -173,11 +168,13 @@ namespace Amazon.Ion.ObjectMapper
         public readonly bool PermissiveMode;
         
         public Dictionary<Type, IIonSerializer> IonSerializers { get; init; }
+
+        public Dictionary<string, object> Context { get; init; }
     }
 
-    public interface IonSerializerFactory<T, TContext> where TContext : IonSerializationContext
+    public interface IonSerializerFactory<T>
     {
-        public IonSerializer<T> create(IonSerializationOptions options, TContext context);
+        public IonSerializer<T> create(IonSerializationOptions options, Dictionary<string, object> context);
     }
 
     public class IonSerializer
@@ -312,7 +309,8 @@ namespace Amazon.Ion.ObjectMapper
             {
                 var customSerializerAttribute = item.GetType().GetCustomAttribute<IonSerializerAttribute>();
                 if (customSerializerAttribute != null) {
-                    var customSerializer = (IIonSerializer)Activator.CreateInstance(customSerializerAttribute.Serializer);
+                    var customSerializerFactory = (IonSerializerFactory<object>)Activator.CreateInstance(customSerializerAttribute.Factory);
+                    var customSerializer = customSerializerFactory.create(options, options.Context);
                     customSerializer.Serialize(writer, item);
                     return;
                 }
