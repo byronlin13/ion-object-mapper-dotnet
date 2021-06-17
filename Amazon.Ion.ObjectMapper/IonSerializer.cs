@@ -172,12 +172,21 @@ namespace Amazon.Ion.ObjectMapper
         public Dictionary<string, object> Context { get; init; }
     }
 
-    public interface IIonSerializerFactory<T>
+    public interface IIonSerializerFactory
     {
-        public IonSerializer<T> create(IonSerializationOptions options, Dictionary<string, object> context);
+        IIonSerializer Create(IonSerializationOptions options, Dictionary<string, object> context);
+
     }
+    public abstract class IonSerializerFactory<T> : IIonSerializerFactory 
+    {
+        public abstract IonSerializer<T> Create(IonSerializationOptions options, Dictionary<string, object> context);
 
+        IIonSerializer IIonSerializerFactory.Create(IonSerializationOptions options, Dictionary<string, object> context) 
+        {
+            return Create(options, context);
+        }
 
+    }
 
     public class IonSerializer
     {
@@ -311,19 +320,11 @@ namespace Amazon.Ion.ObjectMapper
             {
                 var customSerializerAttribute = item.GetType().GetCustomAttribute<IonSerializerAttribute>();
                 if (customSerializerAttribute != null) {
-                    var customSerializerFactory = (IIonSerializerFactory<object>)Activator.CreateInstance(customSerializerAttribute.Factory);
-                    var customSerializer = customSerializerFactory.create(options, options.Context);
+                    var customSerializerFactory = (IIonSerializerFactory)Activator.CreateInstance(customSerializerAttribute.Factory);
+                    var customSerializer = customSerializerFactory.Create(options, options.Context);
                     customSerializer.Serialize(writer, item);
                     return;
                 }
-
-                // var customSerializerAttribute = item.GetType().GetCustomAttribute<IonSerializerAttribute>();
-                // if (customSerializerAttribute != null) {
-                //     var customSerializer = (IIonSerializer)Activator.CreateInstance(customSerializerAttribute.Serializer);
-                //     customSerializer.Serialize(writer, item);
-                //     return;
-                // }
-
 
                 new IonObjectSerializer(this, options, item.GetType()).Serialize(writer, item);
                 return;
@@ -373,7 +374,8 @@ namespace Amazon.Ion.ObjectMapper
             {
                 var customSerializerAttribute = type.GetCustomAttribute<IonSerializerAttribute>();
                 if (customSerializerAttribute != null) {
-                    var customSerializer = (IIonSerializer)Activator.CreateInstance(customSerializerAttribute.Serializer);
+                    var customSerializerFactory = (IIonSerializerFactory)Activator.CreateInstance(customSerializerAttribute.Factory);
+                    var customSerializer = customSerializerFactory.Create(options, options.Context);
                     return customSerializer.Deserialize(reader);
                 }
             }

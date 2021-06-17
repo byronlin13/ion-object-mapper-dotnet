@@ -7,21 +7,11 @@ using static Amazon.Ion.ObjectMapper.Test.Utils;
 
 namespace Amazon.Ion.ObjectMapper.Test
 {
-    class HobbySerializerFactory : IIonSerializerFactory<Hobby>
+    class HobbySerializerFactory : IonSerializerFactory<Hobby>
     {
-        public IonSerializer<Hobby> create(IonSerializationOptions options, Dictionary<string, object> context)
+        public override IonSerializer<Hobby> Create(IonSerializationOptions options, Dictionary<string, object> context)
         {
             return new HobbySerializer((Translator)context.GetValueOrDefault("translator", null));
-        }
-
-        public Hobby Deserialize(IIonReader reader)
-        {
-            return new Hobby { Name = reader.StringValue() };
-        }
-
-        public void Serialize(IIonWriter writer, Hobby item)
-        {
-            writer.WriteString(item.Name);
         }
     }
 
@@ -32,14 +22,14 @@ namespace Amazon.Ion.ObjectMapper.Test
             var d = new Dictionary<string, string>();
             d.Add("hello", "nihao");
             d.Add("running", "paobu");
-            return d.GetValueOrDefault(english, "unknown");
+            return d.GetValueOrDefault("running", "unknown");
         }
 
         public string ToEnglish(string mandarin)
         {
             var d = new Dictionary<string, string>();
             d.Add("nihao", "hello");
-            d.Add("paobu", "running");
+            d.Add("paobu", "Running");
             return d.GetValueOrDefault(mandarin, "unknown");
         }
     }
@@ -64,22 +54,7 @@ namespace Amazon.Ion.ObjectMapper.Test
         }
     }
 
-    // class HobbySerializer : IonSerializer<Hobby>
-    // {
-
-    //     public override Hobby Deserialize(IIonReader reader)
-    //     {
-    //         return new Hobby { Name = reader.StringValue() };
-    //     }
-
-    //     public override void Serialize(IIonWriter writer, Hobby item)
-    //     {
-    //         writer.WriteString(item.Name);
-    //     }
-    // }
-
     [IonSerializer(Factory = typeof(HobbySerializerFactory))]
-    // [IonSerializer(Serializer = typeof(HobbySerializer))]
     class Hobby
     {
         public string Name {get; set;}
@@ -114,12 +89,10 @@ namespace Amazon.Ion.ObjectMapper.Test
                     { "translator", new Translator()}
                 }
             });
-            
-            // var ionSerializer = new IonSerializer();
 
             var stream = ionSerializer.Serialize(shuai);
 
-            Assert.AreEqual("\n{\n  name: \"Shuai\",\n  hobby: \"Running\"\n}", Utils.PrettyPrint(stream));
+            Assert.AreEqual("\n{\n  name: \"Shuai\",\n  hobby: \"paobu\"\n}", Utils.PrettyPrint(stream));
 
             var deserialized = ionSerializer.Deserialize<Person>(stream);
 
