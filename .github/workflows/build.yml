@@ -1,47 +1,47 @@
-name: .NET Library
+# name: .NET Library
 
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main, release ]
+# on:
+#   push:
+#     branches: [ main ]
+#   pull_request:
+#     branches: [ main, release ]
 
-jobs:
-  build:
-    name: Build and test
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ windows-latest ] # Add other OSes later
-        dotnet: ['5.0.x']
+# jobs:
+#   build:
+#     name: Build and test
+#     runs-on: ${{ matrix.os }}
+#     strategy:
+#       matrix:
+#         os: [ windows-latest ] # Add other OSes later
+#         dotnet: ['5.0.x']
 
-    steps:
-      - name: Git Checkout
-        uses: actions/checkout@v2
-        with:
-          submodules: recursive
+#     steps:
+#       - name: Git Checkout
+#         uses: actions/checkout@v2
+#         with:
+#           submodules: recursive
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: ${{ matrix.dotnet }}
+#       - name: Setup .NET
+#         uses: actions/setup-dotnet@v1
+#         with:
+#           dotnet-version: ${{ matrix.dotnet }}
 
-      - name: Install dependencies
-        run: dotnet restore
-      - name: Install Codecov tool
-        run: dotnet tool install --global Codecov.Tool --version 1.13.0
-      - name: Build
-        run: dotnet build --configuration Release --no-restore
+#       - name: Install dependencies
+#         run: dotnet restore
+#       - name: Install Codecov tool
+#         run: dotnet tool install --global Codecov.Tool --version 1.13.0
+#       - name: Build
+#         run: dotnet build --configuration Release --no-restore
 
-      - name: Unit test & generate coverage report
-        run: dotnet test Amazon.IonObjectMapper.Test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
+#       - name: Unit test & generate coverage report
+#         run: dotnet test Amazon.IonObjectMapper.Test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
 
-      - name: Upload to Codecov
-        uses: codecov/codecov-action@v1
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          flags: unittests
+#       - name: Upload to Codecov
+#         uses: codecov/codecov-action@v1
+#         with:
+#           token: ${{ secrets.CODECOV_TOKEN }}
+#           flags: unittests
 
-      - name: Performance test
-        if: github.base_ref == 'release'
-        run: dotnet test Amazon.IonObjectMapper.PerformanceTest
+#       - name: Performance test
+#         if: github.base_ref == 'release'
+#         run: dotnet test Amazon.IonObjectMapper.PerformanceTest
