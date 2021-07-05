@@ -1,0 +1,71 @@
+name: CI Release
+
+## Commented out for now.
+# on:
+#   push:
+#     branches:
+#       - release
+#     tags:
+#       - "v*.*.*"
+
+# Manual trigger for now.
+on: 
+  workflow_dispatch:
+
+
+jobs:
+  build:
+    name: Build and test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ windows-latest ] 
+        dotnet: ['5.0.x']
+
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: ${{ matrix.dotnet }}
+
+      - name: Install dependencies
+        run: dotnet restore
+      - name: Install Codecov tool
+        run: dotnet tool install --global Codecov.Tool --version 1.13.0
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Unit test & generate coverage report
+        run: dotnet test Amazon.IonObjectMapper.Test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
+
+      - name: Upload to Codecov
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          flags: unittests
+
+  sign:
+    name: Sign package
+    needs: [build]
+    # if: startsWith(github.ref, 'refs/tags/') do we need this?
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ windows-latest ] 
+        dotnet: ['5.0.x']
+    
+    
+    steps:
+
+#       - name: Setup .NET
+#         uses: actions/setup-dotnet@v1
+#         with:
+#           dotnet-version: ${{ matrix.dotnet }}
+
+      - name: Get publish ready DLL
+        run: dotnet publish
