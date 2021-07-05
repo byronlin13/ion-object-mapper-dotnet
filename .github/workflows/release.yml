@@ -60,5 +60,5 @@ jobs:
         with:
           dotnet-version: ${{ matrix.dotnet }}
 
-      - name: Get publish ready DLL
+      - name: Create publish ready DLL
         run: dotnet publish
