@@ -64,6 +64,6 @@ jobs:
         run: dotnet publish
         
       - name: Copy unsigned DLL to S3
-        run: aws s3 cp Amazon.IonObjectMapper/bin/Debug/net5.0/Amazon.IonObjectMapper.dll s3://644234937203-unsigned-bucket
+        run: aws s3 cp Amazon.IonObjectMapper/bin/Debug/net5.0/Amazon.IonObjectMapper.dll s3://${{ secrets.AWS_UNSIGNED_BUCKET }}
 
 
