@@ -67,7 +67,7 @@ jobs:
 #         run: aws s3api put-object --bucket ${{ secrets.AWS_UNSIGNED_BUCKET }} --key IonObjectMapperDLL --body Amazon.IonObjectMapper/bin/Debug/net5.0/Amazon.IonObjectMapper.dll
 
       - name: Push unsigned DLL to S3
-      - id: source-version
+        id: source-version
         run: |
           version=$( aws s3api put-object --bucket ${{ secrets.AWS_UNSIGNED_BUCKET }} --key IonObjectMapperDLL --body Amazon.IonObjectMapper/bin/Debug/net5.0/Amazon.IonObjectMapper.dll | jq '.VersionId' )
           echo "::set-output name=source-version::$version"
