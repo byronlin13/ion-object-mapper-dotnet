@@ -63,7 +63,12 @@ jobs:
       - name: Create publish ready DLL
         run: dotnet publish
         
-      - name: Copy unsigned DLL to S3
-        run: aws s3 cp Amazon.IonObjectMapper/bin/Debug/net5.0/Amazon.IonObjectMapper.dll s3://${{ secrets.AWS_UNSIGNED_BUCKET }}
+      - name: Push unsigned DLL to S3
+        run: aws s3api put-object --bucket ${{ secrets.AWS_UNSIGNED_BUCKET }} --key IonObjectMapperDLL --body Amazon.IonObjectMapper/bin/Debug/net5.0/Amazon.IonObjectMapper.dll
 
-
+#       - name: Trigger signing job
+#         run: aws signer start-signing-job \
+#           --source "s3={bucketName=${{ secrets.AWS_UNSIGNED_BUCKET }},key=IonObjectMapperDLL,version=$SOURCE_VERSION}" \
+#           --destination "s3={bucketName=${{ secrets.AWS_SIGNED_BUCKET }},prefix=\"signed/\"}" \
+#           --profile-name $PROFILE_NAME \
+#           --profile-owner $PROFILE_OWNER
