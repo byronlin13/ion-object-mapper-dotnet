@@ -67,14 +67,14 @@ jobs:
 #         run: aws s3api put-object --bucket ${{ secrets.AWS_UNSIGNED_BUCKET }} --key IonObjectMapperDLL --body Amazon.IonObjectMapper/bin/Debug/net5.0/Amazon.IonObjectMapper.dll
 
       - name: Push unsigned DLL to S3
-        id: source-version
+        id: get-version
         run: |
           version=$( aws s3api put-object --bucket ${{ secrets.AWS_UNSIGNED_BUCKET }} --key IonObjectMapperDLL --body Amazon.IonObjectMapper/bin/Debug/net5.0/Amazon.IonObjectMapper.dll | jq '.VersionId' )
           echo "::set-output name=source-version::$version"
 
 
       - name: Trigger signing job
-        run: echo ${{ steps.source-version.outputs.version }}
+        run: echo ${{ steps.get-version.outputs.source-version }}
 #         run: aws signer start-signing-job \
 #           --source "s3={bucketName=${{ secrets.AWS_UNSIGNED_BUCKET }},key=IonObjectMapperDLL,version=$SOURCE_VERSION}" \
 #           --destination "s3={bucketName=${{ secrets.AWS_SIGNED_BUCKET }},prefix=\"signed/\"}" \
