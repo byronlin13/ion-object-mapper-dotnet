@@ -54,6 +54,9 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-west-2
+          role-to-assume: arn:aws:iam::644234937203:role/QLDBSigner-ArtifactAccessRole
+          role-external-id: QLDBSigner
+          
         
       - name: Git Checkout
         uses: actions/checkout@v2
@@ -80,18 +83,18 @@ jobs:
           --profile-owner ${{ secrets.AWS_PROFILE_OWNER }} | jq '.JobID' )
           echo "::set-output name=job-id::$id"
 
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.x'
+#       - name: Set up Python
+#         uses: actions/setup-python@v2
+#         with:
+#           python-version: '3.x'
         
-      - name: Wait for signing job to complete
-        run: |
-          pip install boto3
-          python signing_job_waiter.py ${{ steps.get-job-id.outputs.job-id }}
+#       - name: Wait for signing job to complete
+#         run: |
+#           pip install boto3
+#           python signing_job_waiter.py ${{ steps.get-job-id.outputs.job-id }}
       
-      - name: Get signed DLL from S3
-        run: |
-          aws s3api get-object --bucket ${{ secrets.AWS_SIGNED_BUCKET }} --key signed/${{ steps.get-job-id.outputs.job-id }} SignedIonObjectMapper.dll
+#       - name: Get signed DLL from S3
+#         run: |
+#           aws s3api get-object --bucket ${{ secrets.AWS_SIGNED_BUCKET }} --key signed/${{ steps.get-job-id.outputs.job-id }} SignedIonObjectMapper.dll
       
 #       - name: Publish to NuGet
