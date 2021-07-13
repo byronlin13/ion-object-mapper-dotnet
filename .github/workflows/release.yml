@@ -51,7 +51,7 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-west-2
-          role-to-assume: arn:aws:iam::644234937203:role/QLDBSigner-ArtifactAccessRole
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           role-external-id: QLDBSigner
           role-duration-seconds: 1200
           
