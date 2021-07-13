@@ -46,7 +46,7 @@ jobs:
         os: [ ubuntu-latest ] 
         dotnet: ['5.0.x']
     env:
-      source-key: Amazon.IonObjectMapper.DLL
+      source-key: Amazon.IonObjectMapper.dll
       
     steps:
       - uses: aws-actions/configure-aws-credentials@v1
