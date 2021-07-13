@@ -86,14 +86,21 @@ jobs:
           job=$( aws s3api get-object-tagging --bucket 644234937203-unsigned-bucket --key QLDBSignerAuthenticode/AuthenticodeSigner-SHA256-RSA/${{ env.source-key }} --version-id ${{ steps.get-version.outputs.version-id }} | jq '.TagSet[0].Value' )
           echo "::set-output name=job-id::$job"
         
-        
       - name: Poll signed s3 bucket to see if the signed artifact is there
         run: |
           echo ${{ steps.get-job-id.outputs.job-id }}
           aws s3api wait object-exists --bucket ${{ secrets.AWS_SIGNED_BUCKET }} --key QLDBSignerAuthenticode/AuthenticodeSigner-SHA256-RSA/${{ env.source-key }}-${{ steps.get-job-id.outputs.job-id }}
       
-#       - name: Get signed DLL from S3
-#         run: |
-#           aws s3api get-object --bucket ${{ secrets.AWS_SIGNED_BUCKET }} --key signed/${{ steps.get-job-id.outputs.job-id }} SignedIonObjectMapper.dll
+      - name: Get signed DLL from S3
+        run: |
+          aws s3api get-object --bucket ${{ secrets.AWS_SIGNED_BUCKET }} --key QLDBSignerAuthenticode/AuthenticodeSigner-SHA256-RSA/${{ env.source-key }}-${{ steps.get-job-id.outputs.job-id }} SignedIonObjectMapper.dll
+      
+      - uses: actions/upload-artifact@v2
+        with:
+          name: my-artifact
+          path: SignedIonObjectMapper.dll
+      
+      
+      
       
 #       - name: Publish to NuGet
