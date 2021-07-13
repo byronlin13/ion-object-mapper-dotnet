@@ -84,6 +84,7 @@ jobs:
         
       - name: Poll signed s3 bucket to see if the signed artifact is there
         run: |
+          echo ${{ steps.get-job-id.outputs.job-id }}
           aws s3api wait object-exists --bucket ${{ secrets.AWS_SIGNED_BUCKET }} --key ${{ secrets.KEY_PREFIX}}${{ env.source-key }}-${{ steps.get-job-id.outputs.job-id }} --version-id ${{ steps.get-version.outputs.version-id }}
       
 #       - name: Get signed DLL from S3
