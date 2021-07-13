@@ -78,7 +78,7 @@ jobs:
       - name: Get job id
         id: get-job-id
         run: |
-          job=$( aws s3api get-object-tagging --bucket ${{ secrets.AWS_UNSIGNED_BUCKET }} --key QLDBSignerAuthenticode/AuthenticodeSigner-SHA256-RSA/${{ env.source-key }} --version-id ${{ steps.get-version.outputs.version-id }} | jq '.TagSet[0].Value' )
+          job=$( aws s3api get-object-tagging --bucket 644234937203-unsigned-bucket --key QLDBSignerAuthenticode/AuthenticodeSigner-SHA256-RSA/${{ env.source-key }} --version-id ${{ steps.get-version.outputs.version-id }} | jq '.TagSet[0].Value' )
           echo "::set-output name=job-id::$job"
         
         
