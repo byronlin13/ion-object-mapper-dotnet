@@ -72,13 +72,13 @@ jobs:
       - name: Push unsigned DLL to S3
         id: get-version
         run: |
-          version=$( aws s3api put-object --bucket ${{ secrets.AWS_UNSIGNED_BUCKET }} --key ${{ secrets.KEY_PREFIX}}${{ env.source-key }} --body Amazon.IonObjectMapper/bin/Debug/net5.0/Amazon.IonObjectMapper.dll  --acl bucket-owner-full-control | jq '.VersionId' )
+          version=$( aws s3api put-object --bucket ${{ secrets.AWS_UNSIGNED_BUCKET }} --key QLDBSignerAuthenticode/AuthenticodeSigner-SHA256-RSA/${{ env.source-key }} --body Amazon.IonObjectMapper/bin/Debug/net5.0/Amazon.IonObjectMapper.dll  --acl bucket-owner-full-control | jq '.VersionId' )
           echo "::set-output name=version-id::$version"
              
       - name: Get job id
         id: get-job-id
         run: |
-          job=$( aws s3api get-object-tagging --bucket ${{ secrets.AWS_UNSIGNED_BUCKET }} --key ${{ secrets.KEY_PREFIX}}${{ env.source-key }} --version-id ${{ steps.get-version.outputs.version-id }} | jq '.TagSet' )
+          job=$( aws s3api get-object-tagging --bucket ${{ secrets.AWS_UNSIGNED_BUCKET }} --key QLDBSignerAuthenticode/AuthenticodeSigner-SHA256-RSA/${{ env.source-key }} --version-id ${{ steps.get-version.outputs.version-id }} | jq '.TagSet' )
           echo "::set-output name=job-id::$job"
         
         
