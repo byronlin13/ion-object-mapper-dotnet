@@ -49,6 +49,9 @@ jobs:
       source-key: Amazon.IonObjectMapper.dll
       
     steps:
+      - name: Wait / Sleep
+        uses: jakejarvis/wait-action@v0.1.1
+
       - uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -58,7 +61,6 @@ jobs:
           role-external-id: QLDBSigner
           role-duration-seconds: 1200
           
-        
       - name: Git Checkout
         uses: actions/checkout@v2
       - name: Setup .NET
@@ -75,17 +77,20 @@ jobs:
           version=$( aws s3api put-object --bucket ${{ secrets.AWS_UNSIGNED_BUCKET }} --key QLDBSignerAuthenticode/AuthenticodeSigner-SHA256-RSA/${{ env.source-key }} --body Amazon.IonObjectMapper/bin/Debug/net5.0/Amazon.IonObjectMapper.dll  --acl bucket-owner-full-control | jq '.VersionId' )
           echo "::set-output name=version-id::$version"
              
+      - name: Wait 5 seconds for job ID tag to be populated
+        run: sleep 5s
+  
       - name: Get job id
         id: get-job-id
         run: |
-          job=$( aws s3api get-object-tagging --bucket 644234937203-unsigned-bucket --key QLDBSignerAuthenticode/AuthenticodeSigner-SHA256-RSA/${{ env.source-key }} --version-id ${{ steps.get-version.outputs.version-id }} | jq '.' )
+          job=$( aws s3api get-object-tagging --bucket 644234937203-unsigned-bucket --key QLDBSignerAuthenticode/AuthenticodeSigner-SHA256-RSA/${{ env.source-key }} --version-id ${{ steps.get-version.outputs.version-id }} | jq '.TagSet[0].Value' )
           echo "::set-output name=job-id::$job"
         
         
       - name: Poll signed s3 bucket to see if the signed artifact is there
         run: |
           echo ${{ steps.get-job-id.outputs.job-id }}
-          aws s3api wait object-exists --bucket ${{ secrets.AWS_SIGNED_BUCKET }} --key QLDBSignerAuthenticode/AuthenticodeSigner-SHA256-RSA/${{ env.source-key }}-${{ steps.get-job-id.outputs.job-idz }} --version-id ${{ steps.get-version.outputs.version-id }}
+          aws s3api wait object-exists --bucket ${{ secrets.AWS_SIGNED_BUCKET }} --key QLDBSignerAuthenticode/AuthenticodeSigner-SHA256-RSA/${{ env.source-key }}-${{ steps.get-job-id.outputs.job-id }} --version-id ${{ steps.get-version.outputs.version-id }}
       
 #       - name: Get signed DLL from S3
 #         run: |
