@@ -72,27 +72,19 @@ jobs:
       - name: Push unsigned DLL to S3
         id: get-version
         run: |
-          version=$( aws s3api put-object --bucket ${{ secrets.AWS_UNSIGNED_BUCKET }} --key ${{ env.source-key }} --body Amazon.IonObjectMapper/bin/Debug/net5.0/Amazon.IonObjectMapper.dll  --acl bucket-owner-full-control | jq '.VersionId' )
-          echo "::set-output name=source-version::$version"
-
-#       - name: Trigger signing job
-#         id: get-job-id
-#         run: id=$( aws signer start-signing-job \
-#           --source "s3={bucketName=${{ secrets.AWS_UNSIGNED_BUCKET }},key=${{ env.source-key }},version=${{ steps.get-version.outputs.source-version }}}" \
-#           --destination "s3={bucketName=${{ secrets.AWS_SIGNED_BUCKET }},prefix=\"signed/\"}" \
-#           --profile-name ${{ secrets.AWS_PROFILE_NAME }} \
-#           --profile-owner ${{ secrets.AWS_PROFILE_OWNER }} | jq '.JobID' )
-#           echo "::set-output name=job-id::$id"
-
-#       - name: Set up Python
-#         uses: actions/setup-python@v2
-#         with:
-#           python-version: '3.x'
+          version=$( aws s3api put-object --bucket ${{ secrets.AWS_UNSIGNED_BUCKET }} --key ${{ secrets.KEY_PREFIX}}${{ env.source-key }} --body Amazon.IonObjectMapper/bin/Debug/net5.0/Amazon.IonObjectMapper.dll  --acl bucket-owner-full-control | jq '.VersionId' )
+          echo "::set-output name=version-id::$version"
+             
+      - name: Get job id
+        id: get-job-id
+        run: |
+          job=$( aws s3api get-object-tagging --bucket ${{ secrets.AWS_UNSIGNED_BUCKET }} --key ${{ secrets.KEY_PREFIX}}${{ env.source-key }} --version-id ${{ steps.get-version.outputs.version-id }}| jq '.TagSet.Value' )
+          echo "::set-output name=job-id::$job"
         
-#       - name: Wait for signing job to complete
-#         run: |
-#           pip install boto3
-#           python signing_job_waiter.py ${{ steps.get-job-id.outputs.job-id }}
+        
+      - name: Poll signed s3 bucket to see if the signed artifact is there
+        run: |
+          aws s3api wait object-exists --bucket ${{ secrets.AWS_SIGNED_BUCKET }} --key ${{ secrets.KEY_PREFIX}}${{ env.source-key }}-${{ steps.get-job-id.outputs.job-id }} --version-id ${{ steps.get-version.outputs.version-id }}
       
 #       - name: Get signed DLL from S3
 #         run: |
