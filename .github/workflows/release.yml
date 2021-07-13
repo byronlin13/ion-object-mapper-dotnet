@@ -56,6 +56,7 @@ jobs:
           aws-region: us-west-2
           role-to-assume: arn:aws:iam::644234937203:role/QLDBSigner-ArtifactAccessRole
           role-external-id: QLDBSigner
+          role-duration-seconds: 1200
           
         
       - name: Git Checkout
