@@ -82,7 +82,7 @@ jobs:
           echo secrets.AWS_KEY-job_id
           echo ${{ secrets.AWS_KEY }}-$job_id
           
-          key="${{ secrets.AWS_KEY }}-$job_id"
+          key="${{ secrets.AWS_KEY }}-b737854d-365f-4d66-8bdc-787c857e86fe"
           echo KEY
           echo $key
 
