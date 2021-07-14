@@ -82,7 +82,8 @@ jobs:
           echo ${{ secrets.AWS_KEY }}-${job_id}
           
           # Poll signed S3 bucket to see if the signed artifact is there
-          #aws s3api wait object-exists --bucket ${{ secrets.AWS_SIGNED_BUCKET }} --key ${{ secrets.AWS_KEY }}-${job_id}
+          # aws s3api wait object-exists --bucket ${{ secrets.AWS_SIGNED_BUCKET }} --key ${{ secrets.AWS_KEY }}-${job_id}
+          echo WOW
           aws s3api wait object-exists --bucket ${{ secrets.AWS_SIGNED_BUCKET }} --key QLDBSignerAuthenticode/AuthenticodeSigner-SHA256-RSA/Amazon.IonObjectMapper.dll-${job_id}
 
           # Get signed DLL from S3
@@ -112,10 +113,10 @@ jobs:
 #         run: |
 #           aws s3api get-object --bucket ${{ secrets.AWS_SIGNED_BUCKET }} --key ${{ secrets.AWS_KEY }}-${{ steps.get-job-id.outputs.job-id }} Amazon.IonObjectMapper/bin/Release/net5.0/Amazon.IonObjectMapper.dll
       
-      - uses: actions/upload-artifact@v2
-        with:
-          name: signed-dll
-          path: Amazon.IonObjectMapper/bin/Release/net5.0/Amazon.IonObjectMapper.dll
+#       - uses: actions/upload-artifact@v2
+#         with:
+#           name: signed-dll
+#           path: Amazon.IonObjectMapper/bin/Release/net5.0/Amazon.IonObjectMapper.dll
           
 #       - name: Publish to NuGet
 #         run: | 
