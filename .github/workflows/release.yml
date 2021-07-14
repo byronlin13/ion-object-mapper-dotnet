@@ -81,7 +81,7 @@ jobs:
 
           # Get signed DLL from S3
           aws s3api get-object --bucket ${{ secrets.AWS_SIGNED_BUCKET }} --key ${{ secrets.AWS_KEY }}-${job_id} Amazon.IonObjectMapper/bin/Release/net5.0/Amazon.IonObjectMapper.dll
-
+#
 #       - uses: actions/upload-artifact@v2
 #         with:
 #           name: signed-dll
