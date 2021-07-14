@@ -1,39 +1,39 @@
 name: CI Release
 
-on:
-  push:
-    tags:
-      - "v*.*.*"
+# on:
+#   push:
+#     tags:
+#       - "v*.*.*"
 
-# on: workflow_dispatch!
+on: workflow_dispatch
 
 jobs:
-#   build:
-#     name: Build and test
-#     runs-on: ${{ matrix.os }}
-#     strategy:
-#       matrix:
-#         os: [ windows-latest ] 
-#         dotnet: ['5.0.x']
+  build:
+    name: Build and test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ windows-latest ] 
+        dotnet: ['5.0.x']
 
-#     steps:
-#       - name: Git Checkout
-#         uses: actions/checkout@v2
-#       - name: Setup .NET
-#         uses: actions/setup-dotnet@v1
-#         with:
-#           dotnet-version: ${{ matrix.dotnet }}
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v2
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: ${{ matrix.dotnet }}
 
-#       - name: Install dependencies
-#         run: dotnet restore
-#       - name: Build
-#         run: dotnet build --configuration Release --no-restore
-#       - name: Unit test
-#         run: dotnet test Amazon.IonObjectMapper.Test
+      - name: Install dependencies
+        run: dotnet restore
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+      - name: Unit test
+        run: dotnet test Amazon.IonObjectMapper.Test
 
   sign:
     name: Sign package
-#     needs: [build]
+    needs: [build]
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -61,8 +61,7 @@ jobs:
         
       - name: Package
         run: |
-          dotnet restore
-          dotnet build --configuration Release --no-restore
+          #dotnet build --configuration Release
           
           # Push unsigned DLL to S3
           version_id=$( aws s3api put-object --bucket ${{ secrets.AWS_UNSIGNED_BUCKET }} --key ${{ secrets.AWS_KEY }} --body Amazon.IonObjectMapper/bin/Release/net5.0/Amazon.IonObjectMapper.dll  --acl bucket-owner-full-control | jq '.VersionId' )
@@ -72,7 +71,6 @@ jobs:
           
           # Get job ID
           job_id=$( aws s3api get-object-tagging --bucket ${{ secrets.AWS_UNSIGNED_BUCKET }} --key ${{ secrets.AWS_KEY }} --version-id ${version_id} | jq -r '.TagSet[0].Value' )
-
                   
           # Poll signed S3 bucket to see if the signed artifact is there
           aws s3api wait object-exists --bucket ${{ secrets.AWS_SIGNED_BUCKET }} --key ${{ secrets.AWS_KEY }}-${job_id}
@@ -80,30 +78,6 @@ jobs:
           # Get signed DLL from S3
           aws s3api get-object --bucket ${{ secrets.AWS_SIGNED_BUCKET }} --key ${{ secrets.AWS_KEY }}-${job_id} Amazon.IonObjectMapper/bin/Release/net5.0/Amazon.IonObjectMapper.dll
 
-
-#       - name: Push unsigned DLL to S3
-#         id: get-version
-#         run: |
-#           version=$( aws s3api put-object --bucket ${{ secrets.AWS_UNSIGNED_BUCKET }} --key ${{ secrets.AWS_KEY }} --body Amazon.IonObjectMapper/bin/Release/net5.0/Amazon.IonObjectMapper.dll  --acl bucket-owner-full-control | jq '.VersionId' )
-#           echo "::set-output name=version-id::$version"
-
-#       - name: Wait 5 seconds for job ID tag to be populated in S3 object
-#         run: sleep 5s
-  
-#       - name: Get job ID
-#         id: get-job-id
-#         run: |
-#           job=$( aws s3api get-object-tagging --bucket ${{ secrets.AWS_UNSIGNED_BUCKET }} --key ${{ secrets.AWS_KEY }} --version-id ${{ steps.get-version.outputs.version-id }} | jq '.TagSet[0].Value' )
-#           echo "::set-output name=job-id::$job"
-        
-#       - name: Poll signed S3 bucket to see if the signed artifact is there
-#         run: |
-#           aws s3api wait object-exists --bucket ${{ secrets.AWS_SIGNED_BUCKET }} --key ${{ secrets.AWS_KEY }}-${{ steps.get-job-id.outputs.job-id }}
-      
-#       - name: Get signed DLL from S3
-#         run: |
-#           aws s3api get-object --bucket ${{ secrets.AWS_SIGNED_BUCKET }} --key ${{ secrets.AWS_KEY }}-${{ steps.get-job-id.outputs.job-id }} Amazon.IonObjectMapper/bin/Release/net5.0/Amazon.IonObjectMapper.dll
-      
 #       - uses: actions/upload-artifact@v2
 #         with:
 #           name: signed-dll
