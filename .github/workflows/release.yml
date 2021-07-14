@@ -1,37 +1,39 @@
 name: CI Release
 
-on:
-  push:
-    tags:
-      - "v*.*.*"
+# on:
+#   push:
+#     tags:
+#       - "v*.*.*"
+
+on: workflow_dispatch
 
 jobs:
-  build:
-    name: Build and test
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ windows-latest ] 
-        dotnet: ['5.0.x']
+#   build:
+#     name: Build and test
+#     runs-on: ${{ matrix.os }}
+#     strategy:
+#       matrix:
+#         os: [ windows-latest ] 
+#         dotnet: ['5.0.x']
 
-    steps:
-      - name: Git Checkout
-        uses: actions/checkout@v2
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: ${{ matrix.dotnet }}
+#     steps:
+#       - name: Git Checkout
+#         uses: actions/checkout@v2
+#       - name: Setup .NET
+#         uses: actions/setup-dotnet@v1
+#         with:
+#           dotnet-version: ${{ matrix.dotnet }}
 
-      - name: Install dependencies
-        run: dotnet restore
-      - name: Build
-        run: dotnet build --configuration Release --no-restore
-      - name: Unit test
-        run: dotnet test Amazon.IonObjectMapper.Test
+#       - name: Install dependencies
+#         run: dotnet restore
+#       - name: Build
+#         run: dotnet build --configuration Release --no-restore
+#       - name: Unit test
+#         run: dotnet test Amazon.IonObjectMapper.Test
 
   sign:
     name: Sign package
-    needs: [build]
+#     needs: [build]
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -64,6 +66,8 @@ jobs:
           
           # Push unsigned DLL to S3
           version_id=$( aws s3api put-object --bucket ${{ secrets.AWS_UNSIGNED_BUCKET }} --key ${{ secrets.AWS_KEY }} --body Amazon.IonObjectMapper/bin/Release/net5.0/Amazon.IonObjectMapper.dll  --acl bucket-owner-full-control | jq '.VersionId' )
+          echo VERSION_ID
+          echo ${version_id}
           
           # Wait 5 seconds for job ID tag to be populated in S3 object
           sleep 5s
@@ -71,6 +75,9 @@ jobs:
           # Get job ID
           job_id=$( aws s3api get-object-tagging --bucket ${{ secrets.AWS_UNSIGNED_BUCKET }} --key ${{ secrets.AWS_KEY }} --version-id ${version_id} | jq '.TagSet[0].Value' )
 
+          echo JOB_ID
+          echo ${job_id}
+          
           # Poll signed S3 bucket to see if the signed artifact is there
           aws s3api wait object-exists --bucket ${{ secrets.AWS_SIGNED_BUCKET }} --key ${{ secrets.AWS_KEY }}-${job_id}
           
