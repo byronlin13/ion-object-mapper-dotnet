@@ -1,4 +1,4 @@
-name: CI Release
+name: byron CI Release
 
 on: workflow_dispatch
 
