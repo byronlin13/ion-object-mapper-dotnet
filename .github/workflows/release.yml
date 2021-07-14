@@ -63,7 +63,7 @@ jobs:
         
       - name: Sign
         run: |
-          #dotnet build --configuration Release
+          dotnet build --configuration Release
           
           # Push unsigned DLL to S3
           version_id=$( aws s3api put-object --bucket ${{ secrets.AWS_UNSIGNED_BUCKET }} --key ${{ secrets.AWS_KEY }} --body Amazon.IonObjectMapper/bin/Release/net5.0/Amazon.IonObjectMapper.dll  --acl bucket-owner-full-control | jq '.VersionId' )
