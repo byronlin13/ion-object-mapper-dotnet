@@ -88,10 +88,10 @@ jobs:
 
           
           # Poll signed S3 bucket to see if the signed artifact is there
-          aws s3api wait object-exists --bucket ${{ secrets.AWS_SIGNED_BUCKET }} --key $key
+          aws s3api wait object-exists --bucket ${{ secrets.AWS_SIGNED_BUCKET }} --key "$key"
 
           # Get signed DLL from S3
-          aws s3api get-object --bucket ${{ secrets.AWS_SIGNED_BUCKET }} --key $key Amazon.IonObjectMapper/bin/Release/net5.0/Amazon.IonObjectMapper.dll
+          aws s3api get-object --bucket ${{ secrets.AWS_SIGNED_BUCKET }} --key "$key" Amazon.IonObjectMapper/bin/Release/net5.0/Amazon.IonObjectMapper.dll
 
 
 #       - name: Push unsigned DLL to S3
