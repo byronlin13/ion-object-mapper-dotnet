@@ -1,16 +1,14 @@
 name: CI Release
 
 ## Commented out for now.
-# on:
-#   push:
-#     branches:
-#       - release
-#     tags:
-#       - "v*.*.*"
+on:
+  push:
+    tags:
+      - "v*.*.*"
 
 # Manual trigger for now.
-on: 
-  workflow_dispatch:
+# on: 
+#   workflow_dispatch:
 
 jobs:
 #   build:
