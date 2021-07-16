@@ -52,8 +52,8 @@ jobs:
           
       - name: Create nuget package
         shell: powershell
-        run: dotnet build --configuration Release --no-build
-        
+        run: dotnet pack --configuration Release --no-build
+
       - uses: actions/upload-artifact@v2
         with:
           name: signed-dll
