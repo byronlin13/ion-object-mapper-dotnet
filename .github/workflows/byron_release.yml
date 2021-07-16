@@ -50,10 +50,14 @@ jobs:
           # Get signed DLL from S3
           aws s3api get-object --bucket ${{ secrets.AWS_SIGNED_BUCKET }} --key ${{ secrets.AWS_KEY }}-$job_id Amazon.IonObjectMapper/bin/Release/net5.0/Amazon.IonObjectMapper.dll
           
+      - name: Create nuget package
+        shell: powershell
+        run: dotnet build --configuration Release --no-build
+        
       - uses: actions/upload-artifact@v2
         with:
           name: signed-dll
-          path: Amazon.IonObjectMapper/bin/Release/net5.0/Amazon.IonObjectMapper.dll
+          path: Amazon.IonObjectMapper/bin/Release/Amazon.IonObjectMapper.1.0.0.nupkg
           
 #       - name: Publish to NuGet
 #         run: | 
